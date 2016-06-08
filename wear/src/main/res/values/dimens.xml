@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="time_text_size">34sp</dimen>
+    <dimen name="temp_text_size">20sp</dimen>
+</resources>

@@ -6,11 +6,75 @@
     android:layout_width="match_parent" android:layout_height="match_parent"
     tools:context="com.example.android.sunshine.app.MainWearActivity" tools:deviceIds="wear">
 
-    <TextView android:id="@+id/text" android:layout_width="match_parent" android:layout_height="match_parent"
-        android:text="@string/hello_world" app:layout_box="all" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#1CA8F4"
+        android:orientation="vertical"
+        app:layout_box="all">
 
-    <TextView android:id="@+id/clock" android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start" android:textColor="@android:color/white"
-        app:layout_box="all" />
+        <TextView android:id="@+id/time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/placeholder_time"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/time_text_size" />
+
+        <TextView android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textAllCaps="true"
+            android:text="@string/placeholder_date"
+            android:layout_gravity="center_horizontal"
+            android:textColor="#6bc6f7" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="30dp"
+            android:layout_height="1px"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="#6bc6f7" />
+
+        <LinearLayout android:id="@+id/temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal">
+
+            <ImageView
+                android:id="@+id/weather_icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/placeholder_weather_icon"
+                android:layout_marginRight="10dp" />
+
+            <TextView android:id="@+id/temp_high"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:text="@string/placeholder_temp_high"
+                android:textColor="@android:color/white"
+                android:layout_marginRight="3dp"
+                android:textSize="@dimen/temp_text_size" />
+
+            <TextView android:id="@+id/temp_low"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:text="@string/placeholder_temp_low"
+                android:textColor="#6bc6f7"
+                android:layout_marginLeft="3dp"
+                android:textSize="@dimen/temp_text_size" />
+
+        </LinearLayout>
+    </LinearLayout>
 
 </android.support.wearable.view.BoxInsetLayout>
