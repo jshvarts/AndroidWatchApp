@@ -1,4 +1,12 @@
 <resources>
     <dimen name="time_text_size">34sp</dimen>
     <dimen name="temp_text_size">20sp</dimen>
+    <dimen name="time_margin_top">5dp</dimen>
+    <dimen name="date_margin_top">5dp</dimen>
+    <dimen name="divider_width">30dp</dimen>
+    <dimen name="divider_margin_top_bottom">15dp</dimen>
+    <dimen name="weather_icon_width_height">35dp</dimen>
+    <dimen name="weather_icon_margin_right">10dp</dimen>
+    <dimen name="temp_padding_top_bottom">5dp</dimen>
+    <dimen name="temp_high_margin_right">5dp</dimen>
 </resources>
