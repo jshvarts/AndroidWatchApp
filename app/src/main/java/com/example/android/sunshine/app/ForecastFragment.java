@@ -127,16 +127,16 @@ public class ForecastFragment extends Fragment
 
         getLatestWeather();
 
-        String WEARABLE_DATA_PATH = "/wearable_data";
+        String WEARABLE_DATA_PATH = "/wearable_weather_data";
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), iconId);
 
         Asset asset = createAssetFromBitmap(bitmap);
 
 
         DataMap dataMap = new DataMap();
-        dataMap.putInt("high", (int) Math.round(highTemp));
-        dataMap.putInt("low", (int) Math.round(lowTemp));
-        dataMap.putAsset("icon", asset);
+        dataMap.putInt("highTemp", (int) Math.round(highTemp));
+        dataMap.putInt("lowTemp", (int) Math.round(lowTemp));
+        dataMap.putAsset("weatherIcon", asset);
 
         new SendDataToWearable(WEARABLE_DATA_PATH, dataMap).run();
     }
@@ -517,7 +517,6 @@ public class ForecastFragment extends Fragment
 
         @Override
         public void run() {
-            Log.d(LOG_TAG, "HERE now");
             if (!mGoogleApiClient.isConnected()) {
                 return;
             }
