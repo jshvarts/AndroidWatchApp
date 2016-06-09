@@ -139,7 +139,7 @@ public class MainWearActivity extends WearableActivity implements
                     lowTemp = dataMap.getInt(DATA_ITEM_NAME_LOW_TEMP);
                     highTemp = dataMap.getInt(DATA_ITEM_NAME_HIGH_TEMP);
                     Asset weatherIconAsset = dataMap.getAsset(DATA_ITEM_NAME_WEATHER_ICON);
-                    Bitmap weatherIcon = loadBitmapFromAsset(weatherIconAsset);
+                    weatherIcon = loadBitmapFromAsset(weatherIconAsset);
 
                     Log.d(LOG_TAG, "lowTemp: " + lowTemp);
                     Log.d(LOG_TAG, "highTemp: " + highTemp);
