@@ -49,25 +49,22 @@
                 android:id="@+id/weather_icon"
                 android:layout_width="@dimen/weather_icon_width_height"
                 android:layout_height="@dimen/weather_icon_width_height"
-                android:src="@drawable/placeholder_weather_icon"
                 android:layout_marginRight="@dimen/weather_icon_margin_right" />
 
-            <TextView android:id="@+id/temp_high"
+            <TextView android:id="@+id/high_temp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingTop="@dimen/temp_padding_top_bottom"
                 android:paddingBottom="@dimen/temp_padding_top_bottom"
-                android:text="@string/placeholder_temp_high"
                 android:textColor="@android:color/white"
                 android:layout_marginRight="@dimen/temp_high_margin_right"
                 android:textSize="@dimen/temp_text_size" />
 
-            <TextView android:id="@+id/temp_low"
+            <TextView android:id="@+id/low_temp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingTop="@dimen/temp_padding_top_bottom"
                 android:paddingBottom="@dimen/temp_padding_top_bottom"
-                android:text="@string/placeholder_temp_low"
                 android:textColor="@color/blue_text"
                 android:textSize="@dimen/temp_text_size" />
 
