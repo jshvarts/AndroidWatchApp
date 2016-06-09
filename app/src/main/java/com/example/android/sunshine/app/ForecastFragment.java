@@ -138,7 +138,7 @@ public class ForecastFragment extends Fragment
         dataMap.putDouble("low", lowTemp);
         dataMap.putAsset("icon", asset);
 
-        //new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap).start();
+        new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap).start();
     }
 
     @Override
@@ -467,28 +467,6 @@ public class ForecastFragment extends Fragment
         }
     }
 
-    private void sendDataToWearable(String title, String content, String path) {
-        if (mGoogleApiClient.isConnected()) {
-            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(path);
-            putDataMapRequest.getDataMap().putString("highTemp", content);
-            putDataMapRequest.getDataMap().putString("lowTemp", title);
-            putDataMapRequest.getDataMap().putAsset("weatherIcon", createAssetFromBitmap(null));
-            PutDataRequest request = putDataMapRequest.asPutDataRequest();
-            Wearable.DataApi.putDataItem(mGoogleApiClient, request)
-                    .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-                        @Override
-                        public void onResult(DataApi.DataItemResult dataItemResult) {
-                            if (!dataItemResult.getStatus().isSuccess()) {
-                                Log.e(LOG_TAG, "sendDataToWearable: Failed to set the data, "
-                                        + "status: " + dataItemResult.getStatus().getStatusCode());
-                            }
-                        }
-                    });
-        } else {
-            Log.e(LOG_TAG, "buildWearableOnlyNotification(): no Google API Client connection");
-        }
-    }
-
     private void getLatestWeather() {
         Context context = getActivity();
         String locationQuery = Utility.getPreferredLocation(context);
@@ -526,6 +504,28 @@ public class ForecastFragment extends Fragment
         return Asset.createFromBytes(byteStream.toByteArray());
     }
 
+    private class SendToDataLayerThread extends Thread {
+        String path;
+        DataMap dataMap;
+
+        SendToDataLayerThread(String p, DataMap data) {
+            path = p;
+            dataMap = data;
+        }
+
+        public void run() {
+            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(path);
+            putDataMapRequest.getDataMap().putAll(dataMap);
+            PutDataRequest request = putDataMapRequest.asPutDataRequest();
+            DataApi.DataItemResult result = Wearable.DataApi.putDataItem(mGoogleApiClient, request).await();
+            if (result.getStatus().isSuccess()) {
+                Log.d(LOG_TAG, "DataMap: " + dataMap + " sent successfully to data layer.");
+            } else {
+                // Log an error
+                Log.e(LOG_TAG, "ERROR: failed to send DataMap to data layer");
+            }
+        }
+    }
 
     /*
         Updates the empty list view with contextually relevant information that the user can
