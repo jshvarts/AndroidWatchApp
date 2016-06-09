@@ -128,17 +128,17 @@ public class ForecastFragment extends Fragment
         getLatestWeather();
 
         String WEARABLE_DATA_PATH = "/wearable_data";
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), iconId);
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
-                Utility.getIconResourceForWeatherCondition(iconId));
         Asset asset = createAssetFromBitmap(bitmap);
 
+
         DataMap dataMap = new DataMap();
-        dataMap.putDouble("high", highTemp);
-        dataMap.putDouble("low", lowTemp);
+        dataMap.putInt("high", (int) Math.round(highTemp));
+        dataMap.putInt("low", (int) Math.round(lowTemp));
         dataMap.putAsset("icon", asset);
 
-        new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap).start();
+        new SendDataToWearable(WEARABLE_DATA_PATH, dataMap).run();
     }
 
     @Override
@@ -471,7 +471,9 @@ public class ForecastFragment extends Fragment
         Context context = getActivity();
         String locationQuery = Utility.getPreferredLocation(context);
 
-        Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationQuery, System.currentTimeMillis());
+        //Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationQuery, System.currentTimeMillis());
+        Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                locationQuery, System.currentTimeMillis());
 
         // we'll query our contentProvider, as always
         Cursor cursor = context.getContentResolver().query(weatherUri,
@@ -504,26 +506,38 @@ public class ForecastFragment extends Fragment
         return Asset.createFromBytes(byteStream.toByteArray());
     }
 
-    private class SendToDataLayerThread extends Thread {
+    private class SendDataToWearable implements Runnable {
         String path;
         DataMap dataMap;
 
-        SendToDataLayerThread(String p, DataMap data) {
-            path = p;
-            dataMap = data;
+        SendDataToWearable(String path, DataMap dataMap) {
+            this.path = path;
+            this.dataMap = dataMap;
         }
 
+        @Override
         public void run() {
+            Log.d(LOG_TAG, "HERE now");
+            if (!mGoogleApiClient.isConnected()) {
+                return;
+            }
             PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(path);
             putDataMapRequest.getDataMap().putAll(dataMap);
             PutDataRequest request = putDataMapRequest.asPutDataRequest();
-            DataApi.DataItemResult result = Wearable.DataApi.putDataItem(mGoogleApiClient, request).await();
-            if (result.getStatus().isSuccess()) {
-                Log.d(LOG_TAG, "DataMap: " + dataMap + " sent successfully to data layer.");
-            } else {
-                // Log an error
-                Log.e(LOG_TAG, "ERROR: failed to send DataMap to data layer");
-            }
+
+            Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+                    .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                        @Override
+                        public void onResult(DataApi.DataItemResult dataItemResult) {
+                            if (dataItemResult.getStatus().isSuccess()) {
+                                Log.d(LOG_TAG, "DataMap: " + dataMap + " sent successfully to data layer.");
+                            } else {
+                                Log.e(LOG_TAG, "DataMap: " + dataMap + " failed to send. status code: "
+                                        + dataItemResult.getStatus().getStatusCode());
+                            }
+                        }
+                    });
+
         }
     }
 

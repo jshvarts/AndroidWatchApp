@@ -427,6 +427,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     String desc = cursor.getString(INDEX_SHORT_DESC);
 
                     int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
+
                     Resources resources = context.getResources();
                     int artResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
                     String artUrl = Utility.getArtUrlForWeatherCondition(context, weatherId);
@@ -462,8 +463,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                             desc,
                             Utility.formatTemperature(context, high),
                             Utility.formatTemperature(context, low));
-
-                    Log.d("-JS-", "notifyWeather from SunshineSynchAdapter");
 
                     // NotificationCompatBuilder is a very convenient way to build backward-compatible
                     // notifications.  Just throw in some data.
