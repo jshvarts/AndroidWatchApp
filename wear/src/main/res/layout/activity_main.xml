@@ -9,15 +9,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#1CA8F4"
+        android:background="@color/blue_bg"
         android:orientation="vertical"
         app:layout_box="all">
 
         <TextView android:id="@+id/time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:text="@string/placeholder_time"
+            android:layout_marginTop="@dimen/time_margin_top"
             android:textStyle="bold"
             android:layout_gravity="center_horizontal"
             android:textColor="@android:color/white"
@@ -26,20 +25,19 @@
         <TextView android:id="@+id/date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="@dimen/date_margin_top"
             android:textAllCaps="true"
-            android:text="@string/placeholder_date"
             android:layout_gravity="center_horizontal"
-            android:textColor="#6bc6f7" />
+            android:textColor="@color/blue_text" />
 
         <View
             android:id="@+id/divider"
-            android:layout_width="30dp"
+            android:layout_width="@dimen/divider_width"
             android:layout_height="1px"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="15dp"
-            android:background="#6bc6f7" />
+            android:layout_marginTop="@dimen/divider_margin_top_bottom"
+            android:layout_marginBottom="@dimen/divider_margin_top_bottom"
+            android:background="@color/blue_text" />
 
         <LinearLayout android:id="@+id/temp"
             android:layout_width="wrap_content"
@@ -49,29 +47,28 @@
 
             <ImageView
                 android:id="@+id/weather_icon"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
+                android:layout_width="@dimen/weather_icon_width_height"
+                android:layout_height="@dimen/weather_icon_width_height"
                 android:src="@drawable/placeholder_weather_icon"
-                android:layout_marginRight="10dp" />
+                android:layout_marginRight="@dimen/weather_icon_margin_right" />
 
             <TextView android:id="@+id/temp_high"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
+                android:paddingTop="@dimen/temp_padding_top_bottom"
+                android:paddingBottom="@dimen/temp_padding_top_bottom"
                 android:text="@string/placeholder_temp_high"
                 android:textColor="@android:color/white"
-                android:layout_marginRight="3dp"
+                android:layout_marginRight="@dimen/temp_high_margin_right"
                 android:textSize="@dimen/temp_text_size" />
 
             <TextView android:id="@+id/temp_low"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
+                android:paddingTop="@dimen/temp_padding_top_bottom"
+                android:paddingBottom="@dimen/temp_padding_top_bottom"
                 android:text="@string/placeholder_temp_low"
-                android:textColor="#6bc6f7"
-                android:layout_marginLeft="3dp"
+                android:textColor="@color/blue_text"
                 android:textSize="@dimen/temp_text_size" />
 
         </LinearLayout>
