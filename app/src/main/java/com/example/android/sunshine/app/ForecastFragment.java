@@ -17,10 +17,13 @@ package com.example.android.sunshine.app;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,11 +50,26 @@ import android.widget.TextView;
 
 import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link android.support.v7.widget.RecyclerView} layout.
  */
-public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener {
+public class ForecastFragment extends Fragment
+        implements LoaderManager.LoaderCallbacks<Cursor>,
+        SharedPreferences.OnSharedPreferenceChangeListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
     public static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
     private RecyclerView mRecyclerView;
@@ -59,8 +77,16 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private int mChoiceMode;
     private boolean mHoldForTransition;
     private long mInitialSelectedDate = -1;
+    private GoogleApiClient mGoogleApiClient;
 
-    private static final String SELECTED_KEY = "selected_position";
+    private static final int INDEX_WEATHER_ID = 0;
+    private static final int INDEX_MAX_TEMP = 1;
+    private static final int INDEX_MIN_TEMP = 2;
+
+    // data to send to wear
+    private double highTemp;
+    private double lowTemp;
+    private int iconId;
 
     private static final int FORECAST_LOADER = 0;
     // For the forecast view we're showing only a small subset of the stored data.
@@ -95,6 +121,36 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     static final int COL_COORD_LAT = 7;
     static final int COL_COORD_LONG = 8;
 
+    @Override
+        public void onConnected(Bundle bundle) {
+        Log.d(LOG_TAG, "Google API Client connected.");
+
+        getLatestWeather();
+
+        String WEARABLE_DATA_PATH = "/wearable_data";
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
+                Utility.getIconResourceForWeatherCondition(iconId));
+        Asset asset = createAssetFromBitmap(bitmap);
+
+        DataMap dataMap = new DataMap();
+        dataMap.putDouble("high", highTemp);
+        dataMap.putDouble("low", lowTemp);
+        dataMap.putAsset("icon", asset);
+
+        //new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap).start();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(LOG_TAG, "Google API Client connection suspended.");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.e(LOG_TAG, "Failed to connect to Google API Client.");
+    }
+
     /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item
@@ -114,6 +170,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
+        mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
+                .addApi(Wearable.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
         setHasOptionsMenu(true);
     }
 
@@ -129,6 +190,20 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.unregisterOnSharedPreferenceChangeListener(this);
         super.onPause();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onStop() {
+        if (null != mGoogleApiClient && mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+        super.onStop();
     }
 
     @Override
@@ -372,8 +447,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     }
 
-
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -394,9 +467,65 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
+    private void sendDataToWearable(String title, String content, String path) {
+        if (mGoogleApiClient.isConnected()) {
+            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(path);
+            putDataMapRequest.getDataMap().putString("highTemp", content);
+            putDataMapRequest.getDataMap().putString("lowTemp", title);
+            putDataMapRequest.getDataMap().putAsset("weatherIcon", createAssetFromBitmap(null));
+            PutDataRequest request = putDataMapRequest.asPutDataRequest();
+            Wearable.DataApi.putDataItem(mGoogleApiClient, request)
+                    .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                        @Override
+                        public void onResult(DataApi.DataItemResult dataItemResult) {
+                            if (!dataItemResult.getStatus().isSuccess()) {
+                                Log.e(LOG_TAG, "sendDataToWearable: Failed to set the data, "
+                                        + "status: " + dataItemResult.getStatus().getStatusCode());
+                            }
+                        }
+                    });
+        } else {
+            Log.e(LOG_TAG, "buildWearableOnlyNotification(): no Google API Client connection");
+        }
+    }
+
+    private void getLatestWeather() {
+        Context context = getActivity();
+        String locationQuery = Utility.getPreferredLocation(context);
+
+        Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationQuery, System.currentTimeMillis());
+
+        // we'll query our contentProvider, as always
+        Cursor cursor = context.getContentResolver().query(weatherUri,
+                SunshineSyncAdapter.NOTIFY_WEATHER_PROJECTION, null, null, null);
+
+        if (cursor != null) {
+            Log.d(LOG_TAG, "cursor isn't null");
+            cursor.moveToFirst();
+            int weatherId = cursor.getInt(INDEX_WEATHER_ID);
+            highTemp = cursor.getDouble(INDEX_MAX_TEMP);
+            lowTemp = cursor.getDouble(INDEX_MIN_TEMP);
+            iconId = Utility.getIconResourceForWeatherCondition(weatherId);
+
+            Log.d(LOG_TAG, "high temp is : " + highTemp);
+            Log.d(LOG_TAG, "low temp is : " + lowTemp);
+            Log.d(LOG_TAG, "iconId is : " + iconId);
+        } else {
+            Log.d(LOG_TAG, "cursor is null");
+
+        }
+    }
+
     public void setInitialSelectedDate(long initialSelectedDate) {
         mInitialSelectedDate = initialSelectedDate;
     }
+
+    private static Asset createAssetFromBitmap(Bitmap bitmap) {
+        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+        return Asset.createFromBytes(byteStream.toByteArray());
+    }
+
 
     /*
         Updates the empty list view with contextually relevant information that the user can
