@@ -2,6 +2,7 @@ package com.example.android.sunshine.app;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -139,7 +140,7 @@ public class MainWearActivity extends WearableActivity implements
                     lowTemp = dataMap.getInt(DATA_ITEM_NAME_LOW_TEMP);
                     highTemp = dataMap.getInt(DATA_ITEM_NAME_HIGH_TEMP);
                     Asset weatherIconAsset = dataMap.getAsset(DATA_ITEM_NAME_WEATHER_ICON);
-                    weatherIcon = loadBitmapFromAsset(weatherIconAsset);
+                    loadBitmapFromAsset(weatherIconAsset);
 
                     Log.d(LOG_TAG, "lowTemp: " + lowTemp);
                     Log.d(LOG_TAG, "highTemp: " + highTemp);
@@ -182,25 +183,38 @@ public class MainWearActivity extends WearableActivity implements
         mDateView.setText(DISPLAY_DATE_FORMAT.format(now));
     }
 
-    private Bitmap loadBitmapFromAsset(Asset asset) {
+    private void loadBitmapFromAsset(Asset asset) {
         if (asset == null) {
             throw new IllegalArgumentException("Asset must be non-null");
         }
-        ConnectionResult result =
-                mGoogleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        if (!result.isSuccess()) {
-            return null;
-        }
-        // convert asset into a file descriptor and block until it's ready
-        InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
-                mGoogleApiClient, asset).await().getInputStream();
-        mGoogleApiClient.disconnect();
+        new LoadBitmapFromAssetAsyncTask().execute(asset);
+    }
 
-        if (assetInputStream == null) {
-            Log.w(LOG_TAG, "Requested an unknown Asset.");
-            return null;
+    private class LoadBitmapFromAssetAsyncTask extends AsyncTask<Asset, Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(Asset... params) {
+            ConnectionResult result =
+                    mGoogleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            if (!result.isSuccess()) {
+                return null;
+            }
+            // convert asset into a file descriptor and block until it's ready
+            InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
+                    mGoogleApiClient, params[0]).await().getInputStream();
+            mGoogleApiClient.disconnect();
+
+            if (assetInputStream == null) {
+                Log.w(LOG_TAG, "Requested an unknown Asset.");
+                return null;
+            }
+            // decode the stream into a bitmap
+            return BitmapFactory.decodeStream(assetInputStream);
         }
-        // decode the stream into a bitmap
-        return BitmapFactory.decodeStream(assetInputStream);
+
+        @Override
+        protected void onPostExecute(Bitmap resultBitmap) {
+            weatherIcon = resultBitmap;
+        }
     }
 }
