@@ -9,4 +9,19 @@
     <dimen name="weather_icon_margin_right">10dp</dimen>
     <dimen name="temp_padding_top_bottom">5dp</dimen>
     <dimen name="temp_high_margin_right">5dp</dimen>
+
+    <dimen name="digital_time_text_size">35dp</dimen>
+    <dimen name="digital_time_text_size_round">40dp</dimen>
+    <dimen name="digital_x_offset">15dp</dimen>
+    <dimen name="digital_x_offset_round">25dp</dimen>
+    <dimen name="digital_time_y_offset">90dp</dimen>
+
+    <dimen name="digital_date_text_size">20dp</dimen>
+    <dimen name="digital_date_text_size_round">23dp</dimen>
+    <dimen name="digital_date_y_offset">100dp</dimen>
+    <dimen name="digital_weather_icon_y_offset">120dp</dimen>
+    <dimen name="digital_temp_y_offset">150dp</dimen>
+
+    <dimen name="digital_temp_text_size">18dp</dimen>
+    <dimen name="digital_temp_text_size_round">21dp</dimen>
 </resources>

@@ -19,4 +19,7 @@
     <color name="blue_bg">#1CA8F4</color>
     <color name="blue_text">#6bc6f7</color>
 
+    <color name="background">#000000</color>
+    <color name="background2">#000088</color>
+    <color name="digital_text">#ffffff</color>
 </resources>

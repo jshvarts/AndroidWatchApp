@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Wear</string>
+    <string name="my_digital_name">My Digital Watch Face</string>
+
     <string name="placeholder_time">15:50</string>
     <string name="placeholder_date">Fri, Jul 14, 2015</string>
     <string name="placeholder_temp_high">25&#x2103;</string>
