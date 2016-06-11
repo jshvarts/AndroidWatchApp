@@ -470,17 +470,14 @@ public class ForecastFragment extends Fragment
     private void getLatestWeather() {
         Context context = getActivity();
         String locationQuery = Utility.getPreferredLocation(context);
-
-        //Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationQuery, System.currentTimeMillis());
-        Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
-                locationQuery, System.currentTimeMillis());
+        Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationQuery, System.currentTimeMillis());
 
         // we'll query our contentProvider, as always
         Cursor cursor = context.getContentResolver().query(weatherUri,
                 SunshineSyncAdapter.NOTIFY_WEATHER_PROJECTION, null, null, null);
 
-        if (cursor != null) {
-            Log.d(LOG_TAG, "cursor isn't null");
+        if (cursor != null && cursor.getCount() > 0) {
+            Log.d(LOG_TAG, "cursor isn't null and not empty");
             cursor.moveToFirst();
             int weatherId = cursor.getInt(INDEX_WEATHER_ID);
             highTemp = cursor.getDouble(INDEX_MAX_TEMP);
@@ -491,7 +488,7 @@ public class ForecastFragment extends Fragment
             Log.d(LOG_TAG, "low temp is : " + lowTemp);
             Log.d(LOG_TAG, "iconId is : " + iconId);
         } else {
-            Log.d(LOG_TAG, "cursor is null");
+            Log.d(LOG_TAG, "cursor is null or empty");
 
         }
     }
